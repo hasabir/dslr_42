@@ -5,6 +5,14 @@ from describe import describe
 from statistic import Statistic
 
 
+
+def count_runs(signs):
+    runs = 1
+    for i in range(1, len(signs)):
+        if signs[i] != signs[i-1]:
+            runs += 1
+    return runs
+
 def histogram(df):
     # print(df)
     # print("*******************************")
@@ -15,22 +23,22 @@ def histogram(df):
 
     for house in hogwarts_houses:
         dataset = df.loc[house]
-        run_calculation = {}
+        run_results = {}
         for column_name in dataset.columns:
             column = dataset[column_name].fillna(0.0).values.astype(float)
             median = Statistic.median(column)
-            dataset = dataset.copy()  # Ensure it's a copy, not a view
-            dataset[f"{column_name}_comparison"] = np.where(column > median, '+', '-')
-            run_calculation[column_name] = 
-            break
-            # result = column.apply(lambda x: '+' if x > median else '-')
-            # describe_columns[column_name] = Statistic.median(column)
-        run_for_eatch_scor = pd.DataFrame(describe_columns, index=['Median'])
-        # print(dataset)
-        # run_data = dataset
+            dataset = dataset.copy()
+            signs = np.where(column > median, '+', '-')
+            # run_calculation[column_name] = (dataset[f"{column_name}_comparison"] == '+').sum()
+            runs = count_runs(signs)  # Count how many sign changes
+            run_results[column_name] = runs
+
+        run_for_eatch_scor = pd.DataFrame(run_results, index=['runs'])
+        print(f"*****************{house}*****************************")
+        print(run_for_eatch_scor)
         print('\n****************************\n')
-        print(dataset)
-        break
+        # print(dataset)
+        # break
     # print(df)
     # Gryffindor = df.
 
