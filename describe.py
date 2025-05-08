@@ -35,10 +35,12 @@ def describe(df):
     for statisc in indexes:
         describe_columns = {}
         for column_name in df.columns:
-            column = df[column_name].dropna().values.astype(float)
+            column = df[column_name].fillna(0.0).values.astype(float)
             describe_columns[column_name] = get_statistics(statisc, column)
+            break
         new_row = pd.DataFrame(describe_columns, index=[statisc])
         describe = pd.concat([describe, new_row])
+        break
     print(describe)
 
 
