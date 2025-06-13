@@ -15,43 +15,6 @@ def count_runs(signs):
             runs += 1
     return runs
 
-# def calculate_homogeneity(df):
-#     df.set_index('Hogwarts House', inplace=True)
-#     df = df.select_dtypes(include=['float64'])
-    
-#     hogwarts_houses = ['Ravenclaw', 'Slytherin', 'Gryffindor', 'Hufflepuff']
-#     homogenenity_table = pd.DataFrame()
-#     for house in hogwarts_houses:
-#         dataset = df.loc[house]
-#         run_results = {}
-#         homogeneous_features = {}
-#         for column_name in dataset.columns:
-#             column = dataset[column_name].fillna(0.0).values.astype(float)
-#             median = Statistic.median(column)
-#             signs = np.where(column > median, '+', '-')
-            
-#             n1 = (signs == '+').sum()
-#             n2 = (signs == '-').sum()
-#             if n1 + n2 == 0:
-#                 continue
-
-#             expected_number_of_runs = 2 * n1 * n2 / (n1 + n2) + 1
-#             variance = (2 * n1 * n2 * (2 * n1 * n2 - n1 - n2)) / ((n1 + n2) ** 2 * (n1 + n2 - 1))
-#             z = 1.96
-#             lower_bound = expected_number_of_runs - z * np.sqrt(variance)
-#             upper_bound = expected_number_of_runs + z * np.sqrt(variance)
-            
-            
-#             runs = count_runs(signs)  
-#             run_results[column_name] = runs
-            
-#             homogeneous_features[column_name] = True if runs >= lower_bound and runs <= upper_bound else False
-
-#         new_row = pd.DataFrame(homogeneous_features, index=[f"homogeneous_{house}"])
-#         homogenenity_table = pd.concat([homogenenity_table, new_row])
-#     return homogenenity_table
-
-import matplotlib.pyplot as plt
 
 def plot_histogram_for_course(course_name, data):
     plt.figure(figsize=(10, 6))
@@ -117,16 +80,16 @@ def main():
         df = pd.read_csv(sys.argv[1])
         # print(calculate_homogeneity(df).sum())
         
-        # tmp = df.select_dtypes(include=['float64'])
-        # p_value= {}
-        # for course in tmp.columns:
-        #     p_value[course] = check_homogeneity(course, df)
-        # histogram(df)
+        tmp = df.select_dtypes(include=['float64'])
+        p_value= {}
+        for course in tmp.columns:
+            p_value[course] = check_homogeneity(course, df)
+        histogram(df)
         test = df.groupby('Hogwarts House')['Arithmancy'].agg(['mean', 'median'])
         # test = 
         print(test)
         # p_value = check_homogeneity('Herbology', df)
-        # print(p_value)
+        print(p_value)
 
         
 
