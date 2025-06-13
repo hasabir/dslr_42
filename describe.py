@@ -6,10 +6,6 @@ from typing import Any, Callable, Dict, List
 from statistic import Statistic
 
 
-
-
-
-
 def get_statistics(key, args):
     stats = {
         'Count': len(args),
