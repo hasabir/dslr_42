@@ -5,18 +5,33 @@ class Statistic():
 
     @staticmethod
     def median(args):
-        n = int(len(args)/2)
-        list = sorted(args)
-        return list[n] if len(args) % 2 != 0 else list[n] + (list[n] - 1)
+        sorted_args = sorted(args)
+        n = len(sorted_args)
+        if n % 2 == 0:
+            return (sorted_args[n//2 - 1] + sorted_args[n//2]) / 2
+        else:
+            return sorted_args[n//2]
 
     @staticmethod
     def quantile(args, percentage):
-        quantiles = {
-            0.25    : sorted(args)[int(len(args)/4)],
-            0.5     : sorted(args)[int(len(args)/2)],
-            0.75    : sorted(args)[int(3 * len(args)/4)]
-        }
-        return quantiles[percentage]
+        sorted_args = sorted(args)
+        n = len(sorted_args)
+        
+        if percentage == 0.25:
+            index = int(n * 0.25)
+            if index >= n:
+                index = n - 1
+            return sorted_args[index]
+        elif percentage == 0.5:
+            # Use the median calculation for 50% quantile
+            return Statistic.median(sorted_args)
+        elif percentage == 0.75:
+            index = int(n * 0.75)
+            if index >= n:
+                index = n - 1
+            return sorted_args[index]
+        else:
+            raise ValueError("Only 0.25, 0.5, and 0.75 quantiles are supported")
 
     @staticmethod
     def var(args):
@@ -28,3 +43,27 @@ class Statistic():
     @staticmethod
     def std(args):
         return Statistic.var(args)**(1/2)
+
+    @staticmethod
+    def min(args):
+        """Find minimum value without using built-in min()"""
+        if len(args) == 0:
+            raise ValueError("Cannot find min of empty sequence")
+        
+        min_val = args[0]
+        for val in args[1:]:
+            if val < min_val:
+                min_val = val
+        return min_val
+
+    @staticmethod
+    def max(args):
+        """Find maximum value without using built-in max()"""
+        if len(args) == 0:
+            raise ValueError("Cannot find max of empty sequence")
+        
+        max_val = args[0]
+        for val in args[1:]:
+            if val > max_val:
+                max_val = val
+        return max_val
