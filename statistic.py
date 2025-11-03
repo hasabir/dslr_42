@@ -34,7 +34,7 @@ class Statistic():
             raise ValueError("Only 0.25, 0.5, and 0.75 quantiles are supported")
 
     @staticmethod
-    def var(args):
+    def variance(args):
         stock = []
         for arg in args:
             stock.append((arg - Statistic.mean(args)) ** 2)
@@ -42,7 +42,7 @@ class Statistic():
 
     @staticmethod
     def std(args):
-        return Statistic.var(args)**(1/2)
+        return Statistic.variance(args)**(1/2)
 
     @staticmethod
     def min(args):

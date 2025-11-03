@@ -39,27 +39,27 @@ def evaluate_accuracy(train_file, test_file, predictions_file):
         print("Per-Class Accuracy:")
         print("-" * 50)
         
-        for house in classes:
-            house_mask = actual == house
-            house_actual = actual[house_mask]
-            house_predicted = predicted[house_mask]
+        # for house in classes:
+        #     house_mask = actual == house
+        #     house_actual = actual[house_mask]
+        #     house_predicted = predicted[house_mask]
             
-            house_correct = np.sum(house_actual == house_predicted)
-            house_total = len(house_actual)
-            house_accuracy = (house_correct / house_total) * 100 if house_total > 0 else 0
+        #     house_correct = np.sum(house_actual == house_predicted)
+        #     house_total = len(house_actual)
+        #     house_accuracy = (house_correct / house_total) * 100 if house_total > 0 else 0
             
-            print(f"{house:20s}: {house_accuracy:6.2f}% ({house_correct}/{house_total})")
+        #     print(f"{house:20s}: {house_accuracy:6.2f}% ({house_correct}/{house_total})")
         
-        print()
+        # print()
         
-        # Confusion matrix
-        print("Confusion Matrix:")
-        print("-" * 80)
-        print(f"{'Actual \\ Predicted':<20s}", end='')
-        for house in classes:
-            print(f"{house:>15s}", end='')
-        print()
-        print("-" * 80)
+        # # Confusion matrix
+        # print("Confusion Matrix:")
+        # print("-" * 80)
+        # print(f"{'Actual \\ Predicted':<20s}", end='')
+        # for house in classes:
+        #     print(f"{house:>15s}", end='')
+        # print()
+        # print("-" * 80)
         
         for actual_house in classes:
             print(f"{actual_house:<20s}", end='')
@@ -96,8 +96,8 @@ def evaluate_accuracy(train_file, test_file, predictions_file):
 
 def main():
     try:
-        train_file = 'dataset_train.csv'
-        test_file = 'dataset_test.csv'
+        train_file = 'datasets/dataset_train.csv'
+        test_file = 'datasets/dataset_test.csv'
         predictions_file = 'houses.csv'
         
         import os

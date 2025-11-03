@@ -16,6 +16,8 @@ def get_statistics(key, args):
         '50%': Statistic.quantile(args, 0.5),
         '75%': Statistic.quantile(args, 0.75),
         'Max': Statistic.max(args),
+        'variance': Statistic.variance(args),
+        'median': Statistic.median(args),
     }
     return f"{stats[key]:.6f}"
 
@@ -28,7 +30,7 @@ def describe(df):
         return
     
     # Initialize the result DataFrame
-    indexes = ["Count", "Mean", "Std", "Min", "25%", "50%", "75%", "Max"]
+    indexes = ["Count", "Mean", "Std", "Min", "25%", "50%", "75%", "Max", "variance", "median"]
     result_df = pd.DataFrame(index=indexes, columns=numerical_df.columns)
     
     # Calculate statistics for each numerical column

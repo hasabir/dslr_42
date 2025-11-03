@@ -3,6 +3,8 @@ import numpy as np
 import sys
 import json
 
+from logreg_train import OneVsAllClassifier
+
 
 class LogisticRegression:
     def __init__(self, weights=None, bias=None):
@@ -79,6 +81,7 @@ class OneVsAllClassifier:
 
 
 def preprocess_data(df, feature_names):
+    from sklearn.preprocessing import StandardScaler
     """Preprocess the dataset for prediction"""
     # Select only the features that were used in training
     available_features = [col for col in feature_names if col in df.columns]
@@ -87,15 +90,17 @@ def preprocess_data(df, feature_names):
         missing_features = set(feature_names) - set(available_features)
         print(f"Warning: Missing features: {missing_features}")
     
-    X = df[available_features]
+    X = df[available_features].copy()
     
     # Handle missing values by filling with mean
     for column in X.columns:
         if X[column].isna().any():
             mean_value = X[column].mean()
-            X[column] = X[column].fillna(mean_value)
+            # Avoid chained-assignment warning by assigning the filled series back
+            X.loc[:, column] = X[column].fillna(mean_value)
             print(f"Filled missing values in {column} with mean: {mean_value:.4f}")
-    
+    scaler_custom = StandardScaler()
+    X[X.columns] = scaler_custom.fit_transform(X[X.columns])
     return X
 
 
@@ -110,7 +115,16 @@ def predict_houses(df, weights_file):
     print("Preprocessing test data...")
     
     # Preprocess features
+    # X = preprocess_data(df, classifier.feature_names)
+    
+
+    """Main training function"""
+    print("Preprocessing data...")
+    
+    # Preprocess features
     X = preprocess_data(df, classifier.feature_names)
+    
+    
     
     print(f"Test data shape: {X.shape}")
     print(f"Features used: {list(X.columns)}")
@@ -173,6 +187,10 @@ def main():
         
         print("\nFirst 10 predictions:")
         print(results.head(10))
+        # iterate over the 'Hogwarts House' column and print each value with its index
+        for idx, house in enumerate(results['Hogwarts House']):
+            print(f"{idx}: {house}")
+        
         
     except Exception as e:
         print(f"Error: {e}")

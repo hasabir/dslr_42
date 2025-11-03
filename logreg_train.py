@@ -185,23 +185,33 @@ def preprocess_data(df):
     for column in numerical_df.columns:
         if numerical_df[column].isna().any():
             mean_value = numerical_df[column].mean()
+            print(f"************************ before numerical_df[column] = {numerical_df[column]}")
             numerical_df[column] = numerical_df[column].fillna(mean_value)
-    
+            print(f"************************ after numerical_df[column] = {numerical_df[column]}")
+        
     return numerical_df
 
 
 def train_logistic_regression(df):
+    from sklearn.preprocessing import StandardScaler
+
     """Main training function"""
     print("Preprocessing data...")
     
     # Preprocess features
     X = preprocess_data(df)
+    # scaler_custom = StandardScaler()
+    # X[X.columns] = scaler_custom.fit_transform(X[X.columns])
+
+    print("******************************** X after preprocess_data ************************\n", X.head())
     
     # Get target variable (Hogwarts House)
     if 'Hogwarts House' not in df.columns:
         raise ValueError("'Hogwarts House' column not found in dataset")
+    print('*' * 50)
     
     y = df['Hogwarts House'].values
+    print("******************************** y after extracting target ************************\n", y)
     
     print(f"Training data shape: {X.shape}")
     print(f"Number of classes: {len(np.unique(y))}")
