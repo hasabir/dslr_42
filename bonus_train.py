@@ -13,13 +13,19 @@ from sklearn.metrics import accuracy_score
 from logreg_train import OneVsAllClassifier
 
 class LogisticRegressionBonus(LogisticRegression):
-    def __init__(self, learning_rate=0.01, max_iterations=1000, tolerance=1e-6, weights=None, bias=0):
+    def __init__(self, learning_rate=0.01, max_iterations=1000, tolerance=1e-6, weights=None, bias=0, type='sgd'):
         super().__init__(learning_rate, max_iterations, tolerance)
         self.weights = weights
         self.bias = bias
+        self.type = type  # 'bgd', 'sgd', or 'mini-bgd'
 
     def fit(self, X, y):
-        m, n = X.shape
+        if self.type == 'bgd':
+            return super().fit(X, y)
+        elif self.type == 'sgd':
+            m, n = X.shape
+        else:
+            m = 32  # mini-batch size
 
         if self.weights is None:
             self.weights = np.zeros(n)
@@ -59,8 +65,9 @@ class LogisticRegressionBonus(LogisticRegression):
 
 
 class OneVsAllClassifierBonus(OneVsAllClassifier):
-    def __init__(self, learning_rate=0.01, max_iterations=1000):
+    def __init__(self, learning_rate=0.01, max_iterations=1000, type='sgd'):
         super().__init__(learning_rate, max_iterations)
+        self.type = type
 
     def load_weights(self, filename):
         with open(filename, 'r') as f:
@@ -82,7 +89,7 @@ class OneVsAllClassifierBonus(OneVsAllClassifier):
         print(f"Loaded weights for {len(self.classes)} classes: {self.classes}")
 
 
-def train_logistic_regression(df):
+def train_logistic_regression(df, gradient_type):
     from sklearn.preprocessing import StandardScaler
 
     """Main training function"""
@@ -90,6 +97,8 @@ def train_logistic_regression(df):
     
     # Preprocess features
     X = preprocess_data(df)
+    scaler_custom = StandardScaler()
+    X[X.columns] = scaler_custom.fit_transform(X[X.columns])
 
     
     if 'Hogwarts House' not in df.columns:
@@ -99,7 +108,8 @@ def train_logistic_regression(df):
     y = df['Hogwarts House'].values
     
     # Create and train one-vs-all classifier
-    classifier = OneVsAllClassifierBonus(learning_rate=0.01, max_iterations=1000)
+
+    classifier = OneVsAllClassifierBonus(learning_rate=0.01, max_iterations=1000, type=gradient_type)
     classifier.fit(X, y)
     
     # Save weights
@@ -110,53 +120,15 @@ def train_logistic_regression(df):
 
 
 
-def calculate_accuracy(dataset_path, weights_file, test_size=0.2, random_state=42):
-    """Compare custom implementation with sklearn"""
-    
-    print("="*80)
-    print("LOGISTIC REGRESSION COMPARISON: Custom vs Sklearn")
-    print("="*80)
-
-    df = pd.read_csv(dataset_path)
-
-    X = preprocess_data(df)
-    y = df['Hogwarts House'].values
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size, random_state=random_state, stratify=y
-    )
-
-    
-    # Scale features
-    scaler_custom = StandardScaler()
-    X_train_scaled = pd.DataFrame(
-        scaler_custom.fit_transform(X_train),
-        columns=X_train.columns
-    )
-    X_test_scaled = pd.DataFrame(
-        scaler_custom.transform(X_test),
-        columns=X_test.columns
-    )
-    
-    start_time = time.time()
-    custom_model = OneVsAllClassifierBonus(learning_rate=0.0001, max_iterations=1000)
-    custom_model.fit(X_train_scaled, y_train)
-    custom_train_time = time.time() - start_time
-    
-    y_pred_custom = custom_model.predict(X_test_scaled)
-    custom_accuracy = accuracy_score(y_test, y_pred_custom)
-    
-    print(f"\nTraining time: {custom_train_time:.4f} seconds")
-    print(f"Test Accuracy: {custom_accuracy:.4f}")
-
-
 
 def main():
     try:
-        if len(sys.argv) != 2:
-            raise Exception("Number of arguments is incorrect. Usage: python logreg_train.py dataset_train.csv")
-        
+        if len(sys.argv) != 3:
+            raise Exception("Number of arguments is incorrect. Usage: python logreg_train.py dataset_train.csv <type of gradient: bgd or sgd or mini-bgd>")
         dataset_path = sys.argv[1]
+        gradient_type = sys.argv[2].lower()
+        if gradient_type not in ['bgd', 'sgd', 'mini-bgd']:
+            raise Exception("Invalid gradient type. Choose from 'bgd', 'sgd', or 'mini-bgd'.")
         
         # Check if file exists
         import os
@@ -185,8 +157,8 @@ def main():
         print(f"Dataset loaded successfully. Shape: {df.shape}")
         
         # Train the model
-        classifier = train_logistic_regression(df)
-        calculate_accuracy(dataset_path, 'weights.json')
+        classifier = train_logistic_regression(df, gradient_type)
+        # calculate_accuracy(dataset_path, 'weights.json')
         
     except Exception as e:
         print(f"Error: {e}")

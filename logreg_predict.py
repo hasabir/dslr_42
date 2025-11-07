@@ -55,7 +55,6 @@ class OneVsAllClassifier:
             classifier.feature_names = classifier_data['feature_names']
             self.classifiers[class_label] = classifier
         
-        print(f"Loaded weights for {len(self.classes)} classes: {self.classes}")
     
     def predict_probabilities(self, X):
         """Predict probabilities for all classes"""
@@ -96,9 +95,7 @@ def preprocess_data(df, feature_names):
     for column in X.columns:
         if X[column].isna().any():
             mean_value = X[column].mean()
-            # Avoid chained-assignment warning by assigning the filled series back
             X.loc[:, column] = X[column].fillna(mean_value)
-            print(f"Filled missing values in {column} with mean: {mean_value:.4f}")
     scaler_custom = StandardScaler()
     X[X.columns] = scaler_custom.fit_transform(X[X.columns])
     return X
@@ -106,31 +103,20 @@ def preprocess_data(df, feature_names):
 
 def predict_houses(df, weights_file):
     """Main prediction function"""
-    print("Loading trained model...")
     
     # Load the trained classifier
     classifier = OneVsAllClassifier()
     classifier.load_weights(weights_file)
     
-    print("Preprocessing test data...")
     
-    # Preprocess features
-    # X = preprocess_data(df, classifier.feature_names)
-    
-
-    """Main training function"""
-    print("Preprocessing data...")
     
     # Preprocess features
     X = preprocess_data(df, classifier.feature_names)
     
     
     
-    print(f"Test data shape: {X.shape}")
-    print(f"Features used: {list(X.columns)}")
     
     # Make predictions
-    print("Making predictions...")
     predictions = classifier.predict(X)
     
     # Create results DataFrame
@@ -141,15 +127,6 @@ def predict_houses(df, weights_file):
     
     # Save to houses.csv
     results_df.to_csv('houses.csv', index=False)
-    
-    print(f"Predictions saved to houses.csv")
-    print(f"Predicted {len(predictions)} houses")
-    
-    # Show prediction distribution
-    house_counts = pd.Series(predictions).value_counts()
-    print("\nPrediction distribution:")
-    for house, count in house_counts.items():
-        print(f"{house}: {count} students")
     
     return results_df
 
@@ -180,16 +157,11 @@ def main():
         if df.empty:
             raise Exception("Test dataset is empty")
         
-        print(f"Loaded test dataset with shape: {df.shape}")
         
         # Make predictions
         results = predict_houses(df, weights_file)
-        
-        print("\nFirst 10 predictions:")
-        print(results.head(10))
-        # iterate over the 'Hogwarts House' column and print each value with its index
-        for idx, house in enumerate(results['Hogwarts House']):
-            print(f"{idx}: {house}")
+        print("Predictions saved to 'houses.csv'")
+
         
         
     except Exception as e:
