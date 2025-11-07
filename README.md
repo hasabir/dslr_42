@@ -304,6 +304,16 @@ Interestingly, this update rule has the **same form** as the gradient descent ru
 
 By repeatedly applying this update until convergence, we obtain the parameters $\theta$ that minimize the cost and produce the best classifier.
 
-
+## Gradient Descent:
 ![image.png](https://storage.googleapis.com/dashboard-51ba6.appspot.com/87ef62dc98ffe31c5153dc4471751508.png?GoogleAccessId=firebase-adminsdk-jd298%40dashboard-51ba6.iam.gserviceaccount.com&Expires=16725225600&Signature=Q3MxnzYOlKGfmjIWe3VhIeZPLozJCGconprd6sMK9Qunlv8pOc93dr50%2FTm7D4M3ji1NL2pJSUHjMvLNLLsv3vhS3VYxRgnpRtw2Mbx0EfDEAulRQEPBFX0da8XBC4AfJbrcNQCeRBCg0G%2B3QpTQ7Qo64N%2FRJMTmvMSLLBObYUcS3d7CNQ%2FKS5DoVcR%2BKk8XpvHtaKbXjhtVpN2q3kmei42XzNhZjGDCojotZA74InBRNp7Cgpagy0H2IpDkyQZB6J233V6PYJo4bL1RClbj8SEcDvJPZV%2BxuOuuoBkTrgC%2FFlUMuuWJ0r9Th4Gb9xgVz0dUrsHFwdUMTPg%2BdYbRCw%3D%3D)
+
+## Stochatic GD:
+![image.png](https://files.realpython.com/media/gd-3.ff9f92989807.png)
+
+| Method        | Batch size | Updates per epoch  |
+| ------------- | ---------- | ------------------ |
+| BGD           | 10,000     | **1** update       |
+| Mini-Batch GD | 100        | **100** updates    |
+| SGD           | 1          | **10,000** updates |
+
 
