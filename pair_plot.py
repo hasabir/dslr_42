@@ -38,55 +38,109 @@ def create_pair_plot(df):
     features = numerical_df.columns.tolist()
     n_features = len(features)
     
-    if n_features == 0:
-        print("No features to plot")
+    if n_features < 2:
+        print("Need at least 2 features for pair plot")
         return
+    
+    # House colors
+    house_colors = {
+        'Gryffindor': '#AE0001',      # Dark red
+        'Hufflepuff': '#F0C75E',      # Yellow/gold
+        'Ravenclaw': '#222F5B',       # Dark blue
+        'Slytherin': '#2A623D'        # Dark green
+    }
+    
+    # Check if we have house information
+    has_houses = 'Hogwarts House' in df.columns
+    if has_houses:
+        houses = df['Hogwarts House']
+        unique_houses = sorted(houses.unique())
     
     # Create subplots
     fig, axes = plt.subplots(n_features, n_features, figsize=(15, 15))
     
-    # If only one feature, make it a 1D array
-    if n_features == 1:
-        axes = np.array([[axes]])
-    
     # Plot each pair of features
     for i in range(n_features):
         for j in range(n_features):
-            ax = axes[i, j] if n_features > 1 else axes[0, 0]
+            ax = axes[i, j]
             
             if i == j:
-                # Diagonal: histogram
-                feature_data = numerical_df[features[i]].dropna()
-                ax.hist(feature_data, bins=20, alpha=0.7, color='skyblue')
-                ax.set_title(f'{features[i]}', fontsize=10)
+                # Diagonal: histogram colored by house
+                if has_houses:
+                    house_data_list = []
+                    colors_list = []
+                    for house in unique_houses:
+                        house_mask = houses == house
+                        house_data = numerical_df[features[i]][house_mask].dropna()
+                        if len(house_data) > 0:
+                            house_data_list.append(house_data)
+                            colors_list.append(house_colors.get(house, 'gray'))
+                    
+                    if house_data_list:
+                        ax.hist(house_data_list, bins=15, alpha=0.7, 
+                               color=colors_list, stacked=False)
+                else:
+                    feature_data = numerical_df[features[i]].dropna()
+                    ax.hist(feature_data, bins=20, alpha=0.7, color='skyblue')
+                
+                if j == 0:
+                    ax.set_ylabel(features[i], fontsize=8)
+                if i == n_features - 1:
+                    ax.set_xlabel(features[i], fontsize=8)
             else:
-                # Off-diagonal: scatter plot
-                feature1 = features[i]
-                feature2 = features[j]
+                # Off-diagonal: scatter plot colored by house
+                feature1 = features[j]  # x-axis
+                feature2 = features[i]  # y-axis
                 
                 # Get common data points
                 common_mask = ~(pd.isna(numerical_df[feature1]) | pd.isna(numerical_df[feature2]))
-                data1 = numerical_df[feature1][common_mask]
-                data2 = numerical_df[feature2][common_mask]
                 
-                if len(data1) > 0:
-                    ax.scatter(data1, data2, alpha=0.6, s=20)
+                if has_houses:
+                    common_mask = common_mask & ~pd.isna(houses)
+                
+                if common_mask.sum() > 0:
+                    if has_houses:
+                        # Plot each house with its color
+                        for house in unique_houses:
+                            house_mask = (houses == house) & common_mask
+                            if house_mask.sum() > 0:
+                                ax.scatter(numerical_df[feature1][house_mask], 
+                                          numerical_df[feature2][house_mask],
+                                          alpha=0.6, s=5,
+                                          color=house_colors.get(house, 'gray'),
+                                          edgecolors='none')
+                    else:
+                        data1 = numerical_df[feature1][common_mask]
+                        data2 = numerical_df[feature2][common_mask]
+                        ax.scatter(data1, data2, alpha=0.6, s=5)
+                
+                # Remove labels except on edges
+                if j == 0:
+                    ax.set_ylabel(features[i], fontsize=8)
+                else:
+                    ax.set_ylabel('')
                     
-                    # Calculate and display correlation
-                    correlation = calculate_correlation(data1.values, data2.values)
-                    ax.text(0.05, 0.95, f'r={correlation:.3f}', 
-                           transform=ax.transAxes, fontsize=8,
-                           bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
-                
-                ax.set_xlabel(feature1, fontsize=8)
-                ax.set_ylabel(feature2, fontsize=8)
+                if i == n_features - 1:
+                    ax.set_xlabel(features[j], fontsize=8)
+                else:
+                    ax.set_xlabel('')
             
             # Format axes
             ax.tick_params(labelsize=6)
-            ax.grid(True, alpha=0.3)
+            if i != j:
+                ax.grid(True, alpha=0.2)
+    
+    # Add legend
+    if has_houses:
+        handles = [plt.Line2D([0], [0], marker='o', color='w', 
+                             markerfacecolor=house_colors.get(house, 'gray'), 
+                             markersize=8, label=house)
+                  for house in unique_houses]
+        fig.legend(handles=handles, loc='upper right', fontsize=10, 
+                  bbox_to_anchor=(0.98, 0.98))
     
     plt.tight_layout()
-    plt.suptitle('Pair Plot - Feature Relationships', fontsize=16, y=0.98)
+    plt.suptitle('Pair Plot - Feature Relationships', fontsize=16, y=0.995)
     
     # Save plot to file instead of showing
     filename = 'pair_plot_matrix.png'
@@ -101,13 +155,15 @@ def analyze_features_for_logistic_regression(df):
     
     if numerical_df.empty:
         print("No numerical columns found")
-        return
+        return None
     
     features = numerical_df.columns.tolist()
     correlations = {}
     
-    print("\n=== Feature Analysis for Logistic Regression ===")
-    print("Analyzing correlations between features...")
+    print("\n" + "="*60)
+    print("FEATURE ANALYSIS FOR LOGISTIC REGRESSION")
+    print("="*60)
+    print("\nAnalyzing correlations between features...")
     
     # Calculate correlations between all pairs
     for i in range(len(features)):
@@ -127,55 +183,62 @@ def analyze_features_for_logistic_regression(df):
     # Sort correlations by strength
     sorted_correlations = sorted(correlations.items(), key=lambda x: x[1], reverse=True)
     
-    print("\nTop correlations:")
+    print("\nTop correlations (high correlation = redundant features):")
+    print("-" * 60)
     for (feat1, feat2), corr in sorted_correlations[:5]:
-        print(f"{feat1} - {feat2}: {corr:.4f}")
+        print(f"{feat1:30s} - {feat2:30s}: {corr:.4f}")
     
-    # Recommend features based on correlation analysis
-    print("\n=== Recommendations for Logistic Regression ===")
-    print("Based on correlation analysis:")
-    
-    # Find features with low correlation to each other (good for logistic regression)
-    low_corr_features = []
+    # Score each feature based on correlation and variance
+    feature_scores = []
     for feature in features:
+        # Find max correlation with any other feature
         max_corr = 0
         for other_feature in features:
             if feature != other_feature:
                 pair = tuple(sorted([feature, other_feature]))
-                if pair in correlations:
-                    max_corr = max(max_corr, correlations[pair])
+                max_corr = max(max_corr, correlations.get(pair, 0))
         
-        if max_corr < 0.7:  # Threshold for low correlation
-            low_corr_features.append((feature, max_corr))
-    
-    # Sort by maximum correlation (ascending)
-    low_corr_features.sort(key=lambda x: x[1])
-    
-    print("Recommended features (low correlation with others):")
-    for feature, max_corr in low_corr_features[:6]:  # Top 6 features
-        print(f"- {feature} (max correlation: {max_corr:.4f})")
-    
-    # Also check variance of each feature
-    print("\nFeature variance analysis:")
-    variances = {}
-    for feature in features:
+        # Calculate variance
         data = numerical_df[feature].dropna()
-        if len(data) > 1:
-            variance = Statistic.var(data.values)
-            variances[feature] = variance
+        variance = Statistic.variance(data.values) if len(data) > 1 else 0
+        
+        # Score: higher variance and lower correlation = better
+        score = variance / (1 + max_corr)
+        feature_scores.append((feature, max_corr, variance, score))
     
-    sorted_variances = sorted(variances.items(), key=lambda x: x[1], reverse=True)
-    print("Features with highest variance (more discriminative):")
-    for feature, variance in sorted_variances[:5]:
-        print(f"- {feature}: {variance:.4f}")
+    # Sort by score (descending) - best features first
+    feature_scores.sort(key=lambda x: x[3], reverse=True)
+    
+    # Select top features (typically 6-8 features work well for logistic regression)
+    selected_features = [feat[0] for feat in feature_scores[:8]]
+    
+    print("\n" + "="*60)
+    print("RECOMMENDED FEATURES FOR LOGISTIC REGRESSION")
+    print("="*60)
+    print(f"\n{'Feature':30s} | {'Max Corr':>10s} | {'Variance':>12s} | {'Score':>10s}")
+    print("-" * 60)
+    for i, (feature, max_corr, variance, score) in enumerate(feature_scores[:8], 1):
+        print(f"{feature:30s} | {max_corr:10.4f} | {variance:12.4f} | {score:10.4f}")
+    
+    print(f"\nTotal: {len(selected_features)} features selected")
+    print("\nRationale:")
+    print("- Low correlation with other features (avoid multicollinearity)")
+    print("- High variance (discriminative power for classification)")
+    
+    return selected_features
 
 
 def pair_plot(df):
     """Main function to create pair plot and analyze features"""
-    print("Creating pair plot...")
+    print("\n" + "="*60)
+    print("CREATING PAIR PLOT")
+    print("="*60)
+    print("Creating scatter plot matrix (pair plot)...")
     create_pair_plot(df)
     
-    print("\nAnalyzing features for logistic regression...")
+    print("\n" + "="*60)
+    print("ANALYZING FEATURES FOR LOGISTIC REGRESSION")
+    print("="*60)
     analyze_features_for_logistic_regression(df)
 
 

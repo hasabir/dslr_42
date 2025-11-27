@@ -75,7 +75,33 @@ def create_scatter_plot(df, feature1, feature2):
     data1 = df[feature1][common_mask]
     data2 = df[feature2][common_mask]
     
-    plt.scatter(data1, data2, alpha=0.6, s=50)
+    # Color by Hogwarts House if available
+    if 'Hogwarts House' in df.columns:
+        houses = df['Hogwarts House'][common_mask]
+        
+        # Map house names to colors
+        house_colors = {
+            'Gryffindor': '#AE0001',      # Dark red
+            'Hufflepuff': '#F0C75E',      # Yellow/gold
+            'Ravenclaw': '#222F5B',       # Dark blue
+            'Slytherin': '#2A623D'        # Dark green
+        }
+        
+        # Plot each house with its color
+        for house in sorted(df['Hogwarts House'].unique()):
+            mask = houses == house
+            if mask.sum() > 0:
+                plt.scatter(data1[mask], data2[mask], 
+                           alpha=0.6, s=30, 
+                           color=house_colors.get(house, 'gray'),
+                           label=house, 
+                           edgecolors='black', 
+                           linewidth=0.5)
+        
+        plt.legend(loc='upper right')
+    else:
+        plt.scatter(data1, data2, alpha=0.6, s=50)
+    
     plt.xlabel(feature1)
     plt.ylabel(feature2)
     plt.title(f'Scatter Plot: {feature1} vs {feature2}')
@@ -104,10 +130,22 @@ def scatter_plot(df):
         print("Could not find suitable features for scatter plot")
         return
     
-    print(f"The two most similar features are: {feature1} and {feature2}")
+    print("\n" + "="*60)
+    print("SCATTER PLOT ANALYSIS")
+    print("="*60)
+    print(f"\nThe two most similar features are: {feature1} and {feature2}")
     print(f"Correlation coefficient: {correlation:.6f}")
+    print(f"\n(A correlation close to 1.0 or -1.0 indicates strong similarity)")
+    print(f"\nCreating scatter plot...")
     
     create_scatter_plot(df, feature1, feature2)
+    
+    print("\n" + "="*60)
+    print("ANSWER")
+    print("="*60)
+    print(f"The two features that are similar: {feature1} and {feature2}")
+    print(f"Correlation: {correlation:.6f}")
+    print(f"Scatter plot saved as: scatter_plot_{feature1.replace(' ', '_')}_vs_{feature2.replace(' ', '_')}.png")
 
 
 def main():

@@ -43,7 +43,6 @@ def describe(df):
         for stat_name in indexes:
             result_df.loc[stat_name, column_name] = get_statistics(stat_name, column_data)
     
-    # Format the output to match the required format
     print(result_df.to_string(float_format='%.6f'))
 
 
