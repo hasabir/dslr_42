@@ -143,57 +143,57 @@ def check_homogeneity(course_name, df):
 
 
 
-def check_homogeneity_by_mean_and_median(course_name, df):
-    """Check homogeneity by comparing means and medians across houses"""
-    df_course = df[['Hogwarts House', course_name]].dropna()
+# def check_homogeneity_by_mean_and_median(course_name, df):
+#     """Check homogeneity by comparing means and medians across houses"""
+#     df_course = df[['Hogwarts House', course_name]].dropna()
     
-    # Get groups for each house
-    houses = df['Hogwarts House'].unique()
+#     # Get groups for each house
+#     houses = df['Hogwarts House'].unique()
     
-    print(f"\n=== Homogeneity Analysis for {course_name} ===")
-    print("Mean and Median by House:")
+#     print(f"\n=== Homogeneity Analysis for {course_name} ===")
+#     print("Mean and Median by House:")
     
-    means = []
-    medians = []
+#     means = []
+#     medians = []
     
-    for house in houses:
-        house_scores = df_course[df_course['Hogwarts House'] == house][course_name]
-        if len(house_scores) > 0:
-            mean_val = house_scores.mean()
-            median_val = house_scores.median()
-            means.append(mean_val)
-            medians.append(median_val)
-            print(f"{house}: Mean={mean_val:.4f}, Median={median_val:.4f}")
+#     for house in houses:
+#         house_scores = df_course[df_course['Hogwarts House'] == house][course_name]
+#         if len(house_scores) > 0:
+#             mean_val = house_scores.mean()
+#             median_val = house_scores.median()
+#             means.append(mean_val)
+#             medians.append(median_val)
+#             print(f"{house}: Mean={mean_val:.4f}, Median={median_val:.4f}")
     
-    # Calculate variance of means and medians
-    if len(means) > 1:
-        mean_variance = np.var(means)
-        median_variance = np.var(medians)
+#     # Calculate variance of means and medians
+#     if len(means) > 1:
+#         mean_variance = np.var(means)
+#         median_variance = np.var(medians)
         
-        print(f"\nVariance of means: {mean_variance:.6f}")
-        print(f"Variance of medians: {median_variance:.6f}")
+#         print(f"\nVariance of means: {mean_variance:.6f}")
+#         print(f"Variance of medians: {median_variance:.6f}")
         
-        # Lower variance suggests more homogeneity
-        if mean_variance < 0.1 and median_variance < 0.1:
-            print("Result: Houses appear homogeneous (low variance in means/medians)")
-        else:
-            print("Result: Houses appear heterogeneous (high variance in means/medians)")
+#         # Lower variance suggests more homogeneity
+#         if mean_variance < 0.1 and median_variance < 0.1:
+#             print("Result: Houses appear homogeneous (low variance in means/medians)")
+#         else:
+#             print("Result: Houses appear heterogeneous (high variance in means/medians)")
     
-    # Also perform ANOVA test for comparison
-    groups = []
-    for house in houses:
-        house_scores = df_course[df_course['Hogwarts House'] == house][course_name].dropna()
-        if len(house_scores) > 0:
-            groups.append(house_scores.values)
+#     # Also perform ANOVA test for comparison
+#     groups = []
+#     for house in houses:
+#         house_scores = df_course[df_course['Hogwarts House'] == house][course_name].dropna()
+#         if len(house_scores) > 0:
+#             groups.append(house_scores.values)
 
-    if len(groups) < 2:
-        print("Not enough groups to perform ANOVA for comparison")
-        return 1.0
+#     if len(groups) < 2:
+#         print("Not enough groups to perform ANOVA for comparison")
+#         return 1.0
 
-    f_stat, p_value = f_oneway(*groups)
-    print(f"ANOVA p-value: {p_value:.5f}")
+#     f_stat, p_value = f_oneway(*groups)
+#     print(f"ANOVA p-value: {p_value:.5f}")
 
-    return p_value
+#     return p_value
 
 
 
